@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work With Ritesh Salve</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        * { box-sizing: border-box; margin:0; padding:0; font-family:'Roboto', sans-serif; }
+        body { background-color:#333; display:flex; justify-content:center; min-height:100vh; }
+
+        /* --- LOADER STYLES --- */
+        #loader-screen {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background-color:#f3f4f6; z-index:1000; display:none;
+            flex-direction:column; align-items:center; justify-content:center;
+            opacity:0; transition:opacity 0.3s ease;
+        }
+        .ui-container { width:80%; max-width:320px; display:flex; flex-direction:column; align-items:center; gap:24px; }
+        .progress-track { width:100%; height:12px; background-color:#dbeafe; border-radius:9999px; overflow:hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+        .progress-fill { height:100%; width:0%; background:linear-gradient(90deg,#3b82f6 0%,#2563eb 100%); border-radius:9999px; transition:width 0.1s linear; box-shadow:0 0 10px rgba(59,130,246,0.3); }
+        .loading-text { color:#6b7280; font-size:14px; letter-spacing:2px; font-weight:600; text-transform:uppercase; animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.5;} }
+
+        /* --- APP STYLES --- */
+        .app-container { width:100%; max-width:480px; background-color:#f5f5f5; position:relative; min-height:100vh; display:flex; flex-direction:column; }
+        .bg-image { position:fixed; top:0; left:0; width:100%; height:100%; background-image:url('https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=2070&auto=format&fit=crop'); background-size:cover; background-position:center; filter:grayscale(100%) blur(2px) brightness(0.9); z-index:0; }
+        .content { position:relative; z-index:2; padding-bottom:80px; flex-grow:1; display:flex; flex-direction:column; }
+        .screen { display:none; width:100%; height:100%; animation:fadeIn 0.5s ease-in-out; }
+        .screen.active { display:flex; flex-direction:column; }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+        /* --- START SCREEN --- */
+        #start-screen { justify-content:center; align-items:center; min-height:100vh; text-align:center; padding:20px; }
+        .start-card { background:rgba(100,100,100,0.6); backdrop-filter:blur(5px); padding:40px 20px; border-radius:10px; color:white; width:100%; box-shadow:0 4px 15px rgba(0,0,0,0.2); }
+        .start-title { font-size:26px; font-weight:500; margin-bottom:10px; }
+        .marathi-text { font-size:16px; margin-bottom:30px; opacity:0.9; }
+        .start-btn { background-color:#757575; color:white; border:none; padding:14px 40px; font-size:16px; border-radius:4px; cursor:pointer; text-transform:uppercase; font-weight:500; box-shadow:0 4px 6px rgba(0,0,0,0.2); }
+
+        /* --- FORM SCREEN --- */
+        #form-screen { padding-top:20px; }
+        .stats-bar { display:flex; background-color:rgba(102,102,102,0.85); color:white; margin:0 15px 15px 15px; border-radius:2px; }
+        .stat-box { flex:1; text-align:center; padding:10px; font-size:13px; }
+        .stat-box:first-child { border-right:1px solid rgba(255,255,255,0.3); }
+        .question-card { background:white; margin:0 15px 15px 15px; border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,0.1); overflow:hidden; }
+        .q-header { background-color:#424242; color:white; padding:12px 15px; font-size:16px; }
+        .q-body { padding:20px 15px 15px 15px; }
+        .custom-input { width:100%; border:none; border-bottom:1px solid #e0e0e0; padding:8px 0; font-size:16px; outline:none; }
+        .custom-input:focus { border-bottom-color:#424242; }
+        .required-badge { background-color:#f3f4f6; color:#6b7280; font-size:10px; padding:4px 10px; border-radius:12px; display:inline-block; margin-top:8px; }
+        .error-msg { color:#ef4444; font-size:12px; margin-top:5px; display:none; }
+        .form-actions { display:flex; justify-content:space-between; padding:10px 15px 40px; }
+        .btn-clear { background:white; padding:10px 20px; border-radius:4px; border:1px solid #ddd; }
+        .btn-submit { background:#424242; color:white; padding:10px 25px; border-radius:4px; }
+        .btn-submit:disabled { opacity:0.5; cursor:not-allowed; }
+
+        /* --- BOTTOM BAR --- */
+        .bottom-bar { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background-color:#424242; height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 15px; z-index:10; }
+        .progress-pill { background:white; padding:5px 15px; border-radius:20px; font-size:13px; }
+
+        /* --- SUCCESS --- */
+        #submitted-screen { justify-content:center; align-items:center; padding:20px; }
+        .success-card { background:white; width:100%; border-radius:10px; padding:40px 20px; text-align:center; }
+    </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader-screen">
+    <div class="ui-container">
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-bar"></div>
+        </div>
+        <div class="loading-text" id="loader-status">Loading Survey...</div>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="bg-image"></div>
+    <div class="content">
+
+        <!-- START SCREEN -->
+        <div id="start-screen" class="screen active">
+            <div class="start-card">
+                <h1 class="start-title">Work With Ritesh Salve 🤝😅</h1>
+                <p class="marathi-text">प्रयत्न हाच की मराठी उद्योजक घडवणे ⛳</p>
+                <div style="font-size:14px;margin-bottom:25px;">
+                    <p>Total Questions : 4</p>
+                    <p style="margin-top:5px;">Estimated Time : 4 Mins</p>
+                </div>
+                <button class="start-btn" onclick="triggerLoader()">START SURVEY</button>
+            </div>
+        </div>
+
+        <!-- FORM SCREEN -->
+        <div id="form-screen" class="screen">
+            <div class="text-center text-white p-4 drop-shadow-md">
+                <h1 class="text-xl font-bold">Work With Ritesh Salve 🤝😅</h1>
+                <p class="text-sm">प्रयत्न हाच की मराठी उद्योजक घडवणे ⛳</p>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-box">
+                    <span class="block opacity-70">Estimated Time</span>
+                    <span class="font-bold">4 Mins</span>
+                </div>
+                <div class="stat-box">
+                    <span class="block opacity-70">Total Questions</span>
+                    <span class="font-bold">4</span>
+                </div>
+            </div>
+
+            <form id="surveyForm">
+                <div class="question-card">
+                    <div class="q-header">1. Name</div>
+                    <div class="q-body">
+                        <input type="text" name="user_name" class="custom-input q-input" id="name" required oninput="updateProgress()">
+                        <span class="required-badge">Required</span>
+                    </div>
+                </div>
+                <div class="question-card">
+                    <div class="q-header">2. Contact No</div>
+                    <div class="q-body">
+                        <input type="tel" name="user_contact" class="custom-input q-input" id="contact" required oninput="updateProgress()">
+                        <span class="required-badge">Required</span>
+                    </div>
+                </div>
+                <div class="question-card">
+                    <div class="q-header">3. City & Language</div>
+                    <div class="q-body">
+                        <input type="text" name="user_city" class="custom-input q-input" id="city" required oninput="updateProgress()">
+                        <span class="required-badge">Required</span>
+                    </div>
+                </div>
+                <div class="question-card">
+                    <div class="q-header">4. Age 18+ Only</div>
+                    <div class="q-body">
+                        <input type="number" name="user_age" class="custom-input q-input" id="age" required oninput="validateAge(); updateProgress()">
+                        <span class="required-badge">Required</span>
+                        <p id="age-error" class="error-msg">Sorry, you must be 18 or older to submit this form.</p>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-clear shadow-sm" onclick="clearForm()">Clear form</button>
+                    <button type="button" id="submit-btn" class="btn-submit shadow-md" onclick="submitForm()">SUBMIT ✓</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SUCCESS SCREEN -->
+        <div id="submitted-screen" class="screen">
+            <div class="success-card shadow-xl">
+                <div class="w-16 h-16 bg-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-2xl font-normal text-gray-800 mb-2">Submitted</h2>
+                <p class="text-gray-500">Thanks for completing this form.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="bottom-bar" class="bottom-bar" style="display:none;">
+        <div class="progress-pill" id="progress-text">Answered 0 of 4</div>
+        <div class="text-white text-2xl">✓</div>
+    </div>
+</div>
+
+<script>
+const EMAILJS_PUBLIC_KEY = "OV_DIABwOvgYHXeUK"; 
+const EMAILJS_SERVICE_ID = "service_im75u2p"; 
+const EMAILJS_TEMPLATE_ID = "template_5y4i425"; 
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const progressBar = document.getElementById('progress-bar');
+const loaderScreen = document.getElementById('loader-screen');
+const loaderStatus = document.getElementById('loader-status');
+let progress = 0;
+
+function triggerLoader(customText="Loading Survey...") {
+    loaderStatus.innerText = customText;
+    loaderScreen.style.display = 'flex';
+    setTimeout(()=>{ loaderScreen.style.opacity='1';},10);
+    progress=0;
+    simulateLoading();
+}
+
+function simulateLoading() {
+    if(progress<100){
+        progress += Math.random()*3;
+        if(progress>100) progress=100;
+        progressBar.style.width=`${progress}%`;
+        requestAnimationFrame(simulateLoading);
+    }else{
+        setTimeout(()=>{
+            loaderScreen.style.opacity='0';
+            setTimeout(()=>{
+                loaderScreen.style.display='none';
+                if(loaderStatus.innerText==="Loading Survey..."){
+                    document.getElementById('start-screen').classList.remove('active');
+                    document.getElementById('form-screen').classList.add('active');
+                    document.getElementById('bottom-bar').style.display='flex';
+                    window.scrollTo(0,0);
+                }else{
+                    document.getElementById('form-screen').classList.remove('active');
+                    document.getElementById('submitted-screen').classList.add('active');
+                    document.getElementById('bottom-bar').style.display='none';
+                }
+            },300);
+        },400);
+    }
+}
+
+function validateAge(){
+    const ageInput=document.getElementById('age');
+    const errorMsg=document.getElementById('age-error');
+    const age=parseInt(ageInput.value);
+    if(ageInput.value && age<18){ errorMsg.style.display='block'; return false; }
+    else{ errorMsg.style.display='none'; return true; }
+}
+
+function updateProgress(){
+    const inputs=document.querySelectorAll('.q-input');
+    let answered=0;
+    inputs.forEach(i=>{ if(i.value.trim()!=='') answered++; });
+    document.getElementById('progress-text').innerText=`Answered ${answered} of 4`;
+}
+
+function clearForm(){
+    document.querySelectorAll('.q-input').forEach(i=>i.value='');
+    document.getElementById('age-error').style.display='none';
+    updateProgress();
+}
+
+async function submitForm(){
+    const inputs=document.querySelectorAll('.q-input');
+    const age=parseInt(document.getElementById('age').value);
+    const submitBtn=document.getElementById('submit-btn');
+    let valid=true;
+    inputs.forEach(i=>{ if(i.value.trim()==='') valid=false; });
+    if(!valid){ alert("Please fill all required fields."); return; }
+    if(age<18){ alert("Submission failed. You must be 18 years or older."); return; }
+    submitBtn.disabled=true;
+    triggerLoader("Submitting Data...");
+    try{
+        await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+            user_name:document.getElementById('name').value,
+            user_contact:document.getElementById('contact').value,
+            user_city:document.getElementById('city').value,
+            user_age:document.getElementById('age').value,
+        });
+        progress=100;
+        loaderStatus.innerText="Submission Completed!";
+        simulateLoading();
+    }catch(err){
+        console.error("EmailJS Error:",err);
+        alert("Submission error. Please check your internet or configuration.");
+        loaderScreen.style.display='none';
+        submitBtn.disabled=false;
+    }
+}
+</script>
+</body>
+</html>
